@@ -178,7 +178,7 @@ const changeCurrrentPassword = asyncHandler(async (req, res) => {
     if(!(user.isPasswordCorrect(oldPassword))){
         throw new ApiResponse(400, "password didn't match")
     }
-    user.password = password;
+    user.password = newPassword;
     user.save({validateBeforeSave:false})
 
     res.status(200).json(

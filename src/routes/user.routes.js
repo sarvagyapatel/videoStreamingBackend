@@ -55,5 +55,7 @@ router.route("/register").post(
     verifyJwt,
     updateUserCoverImage
   )
+
+
   
   export default router;
