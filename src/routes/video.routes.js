@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { verifyJwt } from "../middleware/auth.middleware.js";
-import { deleteVideo, getAllVideos, getVideoById, publishVideo, updateVideo } from "../controllers/video.controller.js";
+import { deleteVideo, getAllVideos, getAllVideosForHomePage, getVideoById, publishVideo, updateVideo } from "../controllers/video.controller.js";
 import { upload } from "../middleware/multer.middleware.js";
 
 
@@ -46,5 +46,8 @@ router.route("/publishVideo").post(
     deleteVideo
   )
 
+  router.route("/homePageVideos").get(
+    getAllVideosForHomePage,
+  )
 
 export default router;

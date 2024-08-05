@@ -74,8 +74,6 @@ const getAllVideos = asyncHandler(async (req, res) => {
 const getVideoById = asyncHandler(async (req, res) => {
   try {
     const { videoId } = req.params;
-    console.log(videoId);
-
     const video = await Video.findById(videoId);
 
     if (!video) {
@@ -162,4 +160,23 @@ const deleteVideo = asyncHandler(async(req,res)=>{
     }
 })
 
-export { publishVideo, getAllVideos, getVideoById, updateVideo, deleteVideo };
+const getAllVideosForHomePage = asyncHandler(async (req, res) => {
+
+  try {
+    const videos = await Video.aggregate([
+      {
+        $sort: {
+          createdAt: -1,
+        },
+      },
+    ]);
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, videos, "All Videos Fetched Successfully"));
+  } catch (error) {
+    throw new ApiError(500, error.message, "Something went wrong");
+  }
+});
+
+export { publishVideo, getAllVideos, getVideoById, updateVideo, deleteVideo, getAllVideosForHomePage };
