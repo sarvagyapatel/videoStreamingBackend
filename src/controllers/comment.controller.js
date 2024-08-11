@@ -8,6 +8,7 @@ import { Video } from "../models/video.model.js";
 const addComment = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
   const { content } = req.body;
+  console.log(content)
   const user = req.user;
   try {
     if (!user._id) {

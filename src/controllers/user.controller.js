@@ -261,6 +261,21 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
            ))
 });
 
+const getUserByID = asyncHandler(async(req, res)=>{
+  const {userId} = req.params;
+  try {
+    const user = await User.findById(userId).select("-passward -refreshToken")
+    if(!user){
+      throw new ApiError(400, "No user found")
+    }
+    return res
+    .status(200)
+    .json(200, new ApiResponse(200, user, "User found"))
+  } catch (error) {
+    throw new ApiError(500, error?.message || "Something went wrong")
+  }
+})
+
 export {
   registerUser,
   loginUser,
@@ -271,4 +286,5 @@ export {
   updateAccountDetails,
   updateUserAvatar,
   updateUserCoverImage,
+  getUserByID
 };

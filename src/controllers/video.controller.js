@@ -17,6 +17,7 @@ const publishVideo = asyncHandler(async (req, res) => {
 
     const videoFileLoaclpath = req.files?.videoFile[0]?.path;
     const thumbnailLoaclpath = req.files?.thumbnail[0]?.path;
+    console.log(req.files?.videoFile[0])
 
     const videoFile = await uploadOnCloudinary(videoFileLoaclpath);
     const thumbnail = await uploadOnCloudinary(thumbnailLoaclpath);
