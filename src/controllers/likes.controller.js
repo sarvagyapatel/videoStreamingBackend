@@ -9,6 +9,7 @@ import { Comment } from "../models/comment.model.js";
 const toggleVideoLike = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
   const userId = req.user._id;
+  console.log(userId);
 
   try {
     const video = await Video.findById(videoId);
@@ -16,19 +17,22 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
       throw new ApiError(400, "Video does not exists");
     }
 
-    const existingLike = await Like.findOne({
-      video: videoId,
+    const existingLike = await Like.find({
+      $and: [
+        { video: new mongoose.Types.ObjectId(videoId) },
+        { likedBy: userId },
+      ],
     });
 
-    if (existingLike) {
-      const deleteLike = await Like.findByIdAndDelete(existingLike._id);
+    if (existingLike[0]) {
+      const deleteLike = await Like.findByIdAndDelete(existingLike[0]._id);
       return res
         .status(200)
         .json(new ApiResponse(200, deleteLike, "like removed successfully"));
     }
 
     const addLike = await Like.create({
-      video: videoId,
+      video: new mongoose.Types.ObjectId(videoId),
       likedBy: userId,
     });
 
@@ -50,12 +54,15 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
       throw new ApiError(400, "Comment does not exists");
     }
 
-    const existingLike = await Like.findOne({
-      comment: commentId,
+    const existingLike = await Like.Like.find({
+      $and: [
+        { comment: new mongoose.Types.ObjectId(commentId) },
+        { likedBy: userId },
+      ],
     });
 
-    if (existingLike) {
-      const deleteLike = await Like.findByIdAndDelete(existingLike._id);
+    if (existingLike[0]) {
+      const deleteLike = await Like.findByIdAndDelete(existingLike[0]._id);
       return res
         .status(200)
         .json(new ApiResponse(200, deleteLike, "like removed successfully"));
@@ -73,4 +80,52 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
     throw new ApiError(500, error.message || "Something went wrong");
   }
 });
-export { toggleVideoLike, toggleCommentLike };
+
+const totalLikes = asyncHandler(async (req, res) => {
+  const { videoId } = req.params;
+
+  try {
+    const noOfLikes = await Like.aggregate([
+      {
+        $match: {
+          video: new mongoose.Types.ObjectId(videoId),
+        },
+      },
+      {
+        $count: "likes",
+      },
+    ]);
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, noOfLikes, "total likes on video"));
+  } catch (error) {
+    throw new ApiError(500, error.message || "Something went wrong");
+  }
+});
+
+const likeStatus = asyncHandler(async (req, res) => {
+  const { videoId } = req.params;
+  const userId = req.user._id;
+  try {
+    const status = await Like.find({
+      $and: [
+        { video: new mongoose.Types.ObjectId(videoId) },
+        { likedBy: userId },
+      ],
+    });
+
+    if (status[0]) {
+      return res
+        .status(200)
+        .json(new ApiResponse(200, true, "video is liked by user"));
+    }
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, false, "video is liked by user"));
+  } catch (error) {
+    throw new ApiError(500, error.message || "Something went wrong");
+  }
+});
+export { toggleVideoLike, toggleCommentLike, totalLikes, likeStatus };
