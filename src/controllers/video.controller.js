@@ -180,4 +180,22 @@ const getAllVideosForHomePage = asyncHandler(async (req, res) => {
   }
 });
 
-export { publishVideo, getAllVideos, getVideoById, updateVideo, deleteVideo, getAllVideosForHomePage };
+const incrementViews = asyncHandler(async(req,res) => {
+  const videoId = new mongoose.Types.ObjectId(req.params.videoId);
+
+  try {
+    const updateViews = await Video.findById(videoId);
+    if(!updateViews){
+      throw new ApiError(400, "No such video exist")
+    }
+
+    updateViews.views = updateViews.views+1;
+    await updateViews.save({ validateBeforeSave: false });
+
+    return res.status(200).json(200, new ApiResponse(200, {}, "Incremented view"))
+  } catch (error) {
+    throw new ApiError(500, "Something went wrong")
+  }
+})
+
+export { publishVideo, getAllVideos, getVideoById, updateVideo, deleteVideo, getAllVideosForHomePage, incrementViews};

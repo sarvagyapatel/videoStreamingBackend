@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { Subscription } from "../models/subscription.model.js";
 import { User } from "../models/user.model.js";
 import ApiError from "../utils/ApiError.js";
@@ -5,7 +6,7 @@ import ApiResponse from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 const toggleSubscription = asyncHandler(async (req, res) => {
-  const { channel } = req.params;
+  const channel = new mongoose.Types.ObjectId(req.params.channel);
   const subscriber = req.user._id;
   try {
     if (!subscriber) {
@@ -15,18 +16,17 @@ const toggleSubscription = asyncHandler(async (req, res) => {
       throw new ApiError(400, "Invalid request");
     }
 
-    const exsistingSubscription = await Subscription.findOne({
+    const exsistingSubscription = await Subscription.find({
       $and: [{ subscriber }, { channel }],
     });
-    // console.log(exsistingSubscription)
 
-    if (exsistingSubscription) {
+    if (exsistingSubscription[0]) {
       // remove subscription
       const removeSubscrition = await Subscription.findByIdAndDelete(
-        exsistingSubscription._id,
+        exsistingSubscription[0]._id,
         { new: true }
       );
-      console.log(removeSubscrition);
+
       return res
         .status(200)
         .json(
@@ -84,12 +84,14 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
 });
 
 const getUserChannelSubscribers = asyncHandler(async (req, res) => {
-  const {channelId} = req.params
+  const { channelId } = req.params;
 
   try {
-    const channel = await User.findById(channelId).select("-refreshToken -password");
-    if(!channel){
-      throw new ApiError(400, "No such channel exist")
+    const channel = await User.findById(channelId).select(
+      "-refreshToken -password"
+    );
+    if (!channel) {
+      throw new ApiError(400, "No such channel exist");
     }
 
     const subscribersOfChannel = await Subscription.aggregate([
@@ -99,17 +101,45 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
         },
       },
       {
-        $count: 'Subscribers'
-      }
-    ])
+        $count: "Subscribers",
+      },
+    ]);
 
     return res
-    .status(200)
-    .json(new ApiResponse(200, subscribersOfChannel, "Number of subscribers"))
-
+      .status(200)
+      .json(
+        new ApiResponse(200, subscribersOfChannel, "Number of subscribers")
+      );
   } catch (error) {
-    throw new ApiError(500, "Something went wrong")
+    throw new ApiError(500, "Something went wrong");
   }
 });
 
-export { toggleSubscription, getSubscribedChannels, getUserChannelSubscribers };
+const isSubscribed = asyncHandler(async (req, res) => {
+  const channel = new mongoose.Types.ObjectId(req.params.channel);
+  const subscriber = req.user._id;
+
+  try {
+    const checkSubscription = await Subscription.find({
+      $and: [{ subscriber }, { channel }],
+    });
+    console.log(checkSubscription[0]);
+    if (checkSubscription[0]) {
+      return res
+        .status(200)
+        .json(new ApiResponse(200, true, "Subscribed channel"));
+    }
+    return res
+      .status(200)
+      .json(new ApiResponse(200, false, "not Subscribed channel"));
+  } catch (error) {
+    throw new ApiError(500, error?.message || "Something went wrong");
+  }
+});
+
+export {
+  toggleSubscription,
+  getSubscribedChannels,
+  getUserChannelSubscribers,
+  isSubscribed,
+};

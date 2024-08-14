@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "description": "videostreaming platform backend",
   "type": "module",
-  "main": "app.js",
+  "main": "index.js",
   "scripts": {
-    "start": "node app.js",
-    "dev": "nodemon -r dotenv/config --experimental-json-modules app.js"
+    "start": "node src/index.js",
+    "dev": "nodemon -r dotenv/config --experimental-json-modules src/index.js"
 
   },
   "author": "Sarvagya Patel",
