@@ -21,8 +21,7 @@ router.route("/publishVideo").post(
     publishVideo
   )
 
-  router.route("/allVideos").post(
-    verifyJwt,
+  router.route("/allVideos/:userId").get(
     getAllVideos,
   )
 

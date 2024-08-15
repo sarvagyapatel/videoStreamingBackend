@@ -48,13 +48,13 @@ const publishVideo = asyncHandler(async (req, res) => {
 });
 
 const getAllVideos = asyncHandler(async (req, res) => {
-  const user = req.user;
+  const userId = req.params.userId;
 
   try {
     const videos = await Video.aggregate([
       {
         $match: {
-          owner: new mongoose.Types.ObjectId(user._id),
+          owner: new mongoose.Types.ObjectId(userId),
         },
       },
       {
